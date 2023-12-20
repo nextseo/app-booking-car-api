@@ -40,6 +40,10 @@ const db = mysql2.createConnection({
 //   database: "test",
 // });
 
+app.get('/', (req,res)=>{
+    res.send('Hellowww')
+})
+
 app.post("/api/register", async (req, res) => {
   try {
     const { username, password } = req.body;

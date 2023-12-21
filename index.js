@@ -5,6 +5,10 @@ import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import session from "express-session";
 import bcrypt from "bcrypt";
+import multer from "multer";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+
 
 const app = express();
 const secret = "mysecret";
@@ -26,6 +30,12 @@ app.use(
   })
 );
 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename)
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+
 const db = mysql2.createConnection({
   host: "119.59.100.54",
   user: "nextsoft_cars_kk_db",
@@ -39,6 +49,25 @@ const db = mysql2.createConnection({
 //   password: "",
 //   database: "test",
 // });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images/')
+  },
+  filename: (req, file, cb) => {
+    // const uniqueFileName = Date.now() + '-' + file.originalname;
+    const uniqueFileName = `${Date.now()}.${getFileExtension(file.originalname)}`;
+
+    cb(null, uniqueFileName)
+  },
+})
+
+const upload = multer({ storage: storage })
+
+function getFileExtension(filename) {
+  return filename.split('.').pop();
+}
+
 
 app.get('/', (req,res)=>{
     res.send('Hellowww')
@@ -87,11 +116,11 @@ app.post("/api/login", async (req, res) => {
 
     // สร้าง Token
     const token = jwt.sign({ username, role: userData.role }, secret, {
-      expiresIn: "1h",
+      expiresIn: "3h",
     });
 
     res.cookie("token", token, {
-      maxAge: 300000,
+      // maxAge: 300000,
       secure: true,
       httpOnly: true,
       sameSite: "none",
@@ -157,6 +186,42 @@ app.get("/api/users", authenticationToken, async (req, res) => {
     });
   }
 });
+
+app.post('/api/cars', authenticationToken ,upload.single('file'), async (req,res)=>{
+  const { code, name, license, other } = req.body;
+  const file = req.file.filename;
+
+  const sql = "INSERT INTO cars (code, name, license, other, image ) VALUES (?,?,?,?,?)"
+  const [result] = await db.promise().query(sql, [code || "",name || "",license || "",other || "",file || "" ])
+  console.log(result);
+  res.status(200).json({
+    message:"บันทึกสำเร็จ"
+  });
+  try {
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      message: 'บันทึกข้อมูลไม่สำเร็จ !'
+    })
+  }
+  
+
+
+})
+
+app.get('/api/cars', authenticationToken , async(req,res)=>{
+  try {
+    const sql = "SELECT * FROM cars"
+    const [result] = await db.promise().query(sql)
+    res.status(200).json(result)
+    
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      message: 'บันทึกข้อมูลไม่สำเร็จ !'
+    })
+  }
+})
 
 app.listen(8080, () => {
   console.log("server is 8080");

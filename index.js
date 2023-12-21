@@ -27,10 +27,10 @@ app.use(
 );
 
 const db = mysql2.createConnection({
-  host: "82.180.152.103",
-  user: "u812684713_db",
+  host: "119.59.100.54",
+  user: "nextsoft_cars_kk_db",
   password: "*Nextsoft1234",
-  database: "u812684713_db",
+  database: "cars_kk_db",
 });
 
 // const db = mysql2.createConnection({

@@ -125,12 +125,15 @@ app.post("/api/login", async (req, res) => {
       expiresIn: "1d",
     });
 
-    res.cookie("token", token, {
-      // maxAge: 300000,
-      secure: true,
-      httpOnly: true,
-      sameSite: "none",
-    });
+    // res.cookie("token", token, {
+    //   // maxAge: 300000,
+    //   secure: true,
+    //   httpOnly: true,
+    //   sameSite: "none",
+    // });
+
+    res.cookie('token', token, { expires: new Date(Date.now() + 900000), httpOnly: true });
+
 
     // res.cookie("token", token);
 

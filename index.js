@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import multer from "multer";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+import fs from 'fs'
 
 const app = express();
 
@@ -16,10 +17,10 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://app.xn--12cbx8beub8evezb2evdwa3gkk.com",
-      "https://app-booking-car-api.vercel.app"
+      "https://app-booking-car-api.vercel.app",
     ],
     // methods: ["POST", "GET"],
-    methods: ["POST"," GET"],
+    methods: ["POST", " GET"],
 
     credentials: true,
   })
@@ -119,26 +120,24 @@ app.post("/api/login", async (req, res) => {
         message: "login fail username password ไม่ถูกต้อง",
       });
       return false;
-    }else {
+    } else {
+      // สร้าง Token
+      const token = jwt.sign({ username, role: userData.role }, secret, {
+        expiresIn: "1d",
+      });
 
-    // สร้าง Token
-    const token = jwt.sign({ username, role: userData.role }, secret, {
-      expiresIn: "1d",
-    });
+      // res.cookie("token", token, {
+      //   // maxAge: 300000,
+      //   secure: true,
+      //   httpOnly: true,
+      //   sameSite: "none",
+      // });
 
-    // res.cookie("token", token, {
-    //   // maxAge: 300000,
-    //   secure: true,
-    //   httpOnly: true,
-    //   sameSite: "none",
-    // });
-
-    res.status(200).json({
-      message: "login success",
-      token,
-    });
+      res.status(200).json({
+        message: "login success",
+        token,
+      });
     }
-
   } catch (error) {
     console.log(error);
     res.status(400).json({
@@ -153,10 +152,10 @@ app.post("/api/login", async (req, res) => {
 const authenticationToken = async (req, res, next) => {
   // console.log(req.headers.authorization);
   try {
-    const authHeader = req.headers.authorization
-    let authToken = ""
-    if(authHeader){
-        authToken = authHeader.split(' ')[1]
+    const authHeader = req.headers.authorization;
+    let authToken = "";
+    if (authHeader) {
+      authToken = authHeader.split(" ")[1];
     }
 
     // const authHeader = await req.cookies.token;
@@ -183,7 +182,6 @@ const authenticationToken = async (req, res, next) => {
 //   res.clearCookie('token')
 //   return res.json({message : 'logout success !'})
 // })
-
 
 // api only
 
@@ -235,6 +233,10 @@ app.post(
     }
   }
 );
+
+
+
+
 
 app.get("/api/cars", authenticationToken, async (req, res) => {
   try {

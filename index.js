@@ -9,12 +9,17 @@ import multer from "multer";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
-
 const app = express();
+
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://app.xn--12cbx8beub8evezb2evdwa3gkk.com"],
-    methods: ["POST", "GET"],
+    origin: [
+      "http://localhost:5173",
+      "https://app.xn--12cbx8beub8evezb2evdwa3gkk.com",
+    ],
+    // methods: ["POST", "GET"],
+    methods: ["POST, GET"],
+
     credentials: true,
   })
 );
@@ -22,7 +27,6 @@ app.use(
 const secret = "mysecret";
 app.use(express.json());
 app.use(cookieParser());
-
 
 app.use(
   session({
@@ -32,11 +36,9 @@ app.use(
   })
 );
 
-
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename)
-app.use('/images', express.static(path.join(__dirname, 'images')));
-
+const __dirname = dirname(__filename);
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 const db = mysql2.createConnection({
   host: "119.59.100.54",
@@ -54,26 +56,27 @@ const db = mysql2.createConnection({
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'images/')
+    cb(null, "images/");
   },
   filename: (req, file, cb) => {
     // const uniqueFileName = Date.now() + '-' + file.originalname;
-    const uniqueFileName = `${Date.now()}.${getFileExtension(file.originalname)}`;
+    const uniqueFileName = `${Date.now()}.${getFileExtension(
+      file.originalname
+    )}`;
 
-    cb(null, uniqueFileName)
+    cb(null, uniqueFileName);
   },
-})
+});
 
-const upload = multer({ storage: storage })
+const upload = multer({ storage: storage });
 
 function getFileExtension(filename) {
-  return filename.split('.').pop();
+  return filename.split(".").pop();
 }
 
-
-app.get('/', (req,res)=>{
-    res.send('Hellowww')
-})
+app.get("/", (req, res) => {
+  res.send("Hellowww");
+});
 
 app.post("/api/register", async (req, res) => {
   try {
@@ -118,19 +121,21 @@ app.post("/api/login", async (req, res) => {
 
     // สร้าง Token
     const token = jwt.sign({ username, role: userData.role }, secret, {
-      expiresIn: "3h",
+      expiresIn: "1d",
     });
 
-    res.cookie("token", token, {
-      // maxAge: 300000,
-      secure: true,
-      httpOnly: true,
-      sameSite: "none",
-    });
+    // res.cookie("token", token, {
+    //   // maxAge: 300000,
+    //   secure: true,
+    //   httpOnly: true,
+    //   sameSite: "none",
+    // });
+
+    res.cookie("token", token);
+
     res.status(200).json({
       message: "login success",
-      token
-      
+      token,
     });
   } catch (error) {
     console.log(error);
@@ -171,6 +176,12 @@ const authenticationToken = async (req, res, next) => {
   }
 };
 
+app.get('/api/logout', (req,res)=>{
+  res.clearCookie('token')
+  return res.json({message : 'logout success !'})
+})
+
+
 // api only
 
 app.get("/api/users", authenticationToken, async (req, res) => {
@@ -189,41 +200,51 @@ app.get("/api/users", authenticationToken, async (req, res) => {
   }
 });
 
-app.post('/api/cars', authenticationToken ,upload.single('file'), async (req,res)=>{
-  const { code, name, license, other } = req.body;
-  const file = req.file.filename;
+app.post(
+  "/api/cars",
+  authenticationToken,
+  upload.single("file"),
+  async (req, res) => {
+    const { code, name, license, other } = req.body;
+    const file = req.file.filename;
 
-  const sql = "INSERT INTO cars (code, name, license, other, image ) VALUES (?,?,?,?,?)"
-  const [result] = await db.promise().query(sql, [code || "",name || "",license || "",other || "",file || "" ])
-  console.log(result);
-  res.status(200).json({
-    message:"บันทึกสำเร็จ"
-  });
+    const sql =
+      "INSERT INTO cars (code, name, license, other, image ) VALUES (?,?,?,?,?)";
+    const [result] = await db
+      .promise()
+      .query(sql, [
+        code || "",
+        name || "",
+        license || "",
+        other || "",
+        file || "",
+      ]);
+    console.log(result);
+    res.status(200).json({
+      message: "บันทึกสำเร็จ",
+    });
+    try {
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({
+        message: "บันทึกข้อมูลไม่สำเร็จ !",
+      });
+    }
+  }
+);
+
+app.get("/api/cars", authenticationToken, async (req, res) => {
   try {
+    const sql = "SELECT * FROM cars";
+    const [result] = await db.promise().query(sql);
+    res.status(200).json(result);
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      message: 'บันทึกข้อมูลไม่สำเร็จ !'
-    })
+      message: "บันทึกข้อมูลไม่สำเร็จ !",
+    });
   }
-  
-
-
-})
-
-app.get('/api/cars', authenticationToken , async(req,res)=>{
-  try {
-    const sql = "SELECT * FROM cars"
-    const [result] = await db.promise().query(sql)
-    res.status(200).json(result)
-    
-  } catch (error) {
-    console.log(error);
-    res.status(400).json({
-      message: 'บันทึกข้อมูลไม่สำเร็จ !'
-    })
-  }
-})
+});
 
 app.listen(8080, () => {
   console.log("server is 8080");

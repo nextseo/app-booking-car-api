@@ -16,6 +16,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://app.xn--12cbx8beub8evezb2evdwa3gkk.com",
+      "https://app-booking-car-api.vercel.app"
     ],
     // methods: ["POST", "GET"],
     methods: ["POST, GET"],

@@ -78,7 +78,7 @@ function getFileExtension(filename) {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hellowww v-2");
+  res.send("Hellowww v-3");
 });
 
 app.post("/api/register", async (req, res) => {
@@ -206,25 +206,26 @@ app.post(
   authenticationToken,
   upload.single("file"),
   async (req, res) => {
-    const { code, name, license, other } = req.body;
-    const file = req.file.filename;
-
-    const sql =
-      "INSERT INTO cars (code, name, license, other, image ) VALUES (?,?,?,?,?)";
-    const [result] = await db
-      .promise()
-      .query(sql, [
-        code || "",
-        name || "",
-        license || "",
-        other || "",
-        file || "",
-      ]);
-    console.log(result);
-    res.status(200).json({
-      message: "บันทึกสำเร็จ",
-    });
+ 
     try {
+      const { code, name, license, other } = req.body;
+      const file = req.file.filename;
+  
+      const sql =
+        "INSERT INTO cars (code, name, license, other, image ) VALUES (?,?,?,?,?)";
+      const [result] = await db
+        .promise()
+        .query(sql, [
+          code || "",
+          name || "",
+          license || "",
+          other || "",
+          file || "",
+        ]);
+      console.log(result);
+      res.status(200).json({
+        message: "บันทึกสำเร็จ",
+      });
     } catch (error) {
       console.log(error);
       res.status(400).json({

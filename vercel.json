@@ -11,11 +11,8 @@
         "src": "/(.*)",
         "dest": "index.js"
       }
-    ],
-    "headers": {
-      "/(.*)": {
-        "Cache-Control": "max-age=0, s-maxage=86400"
-      }
-    }
+    ]
+
+
     
   }

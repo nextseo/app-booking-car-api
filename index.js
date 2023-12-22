@@ -125,14 +125,14 @@ app.post("/api/login", async (req, res) => {
       expiresIn: "1d",
     });
 
-    // res.cookie("token", token, {
-    //   // maxAge: 300000,
-    //   secure: true,
-    //   httpOnly: true,
-    //   sameSite: "none",
-    // });
+    res.cookie("token", token, {
+      // maxAge: 300000,
+      secure: true,
+      httpOnly: true,
+      sameSite: "none",
+    });
 
-    res.cookie("token", token);
+    // res.cookie("token", token);
 
     res.status(200).json({
       message: "login success",

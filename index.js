@@ -118,7 +118,7 @@ app.post("/api/login", async (req, res) => {
         message: "login fail username password ไม่ถูกต้อง",
       });
       return false;
-    }
+    }else {
 
     // สร้าง Token
     const token = jwt.sign({ username, role: userData.role }, secret, {
@@ -132,15 +132,16 @@ app.post("/api/login", async (req, res) => {
     //   sameSite: "none",
     // });
 
-    res.cookie('token', token, { domain: 'http://localhost:5173', path: '/' });
 
 
-    // res.cookie("token", token);
+    res.cookie("token", token);
 
     res.status(200).json({
       message: "login success",
       token,
     });
+    }
+
   } catch (error) {
     console.log(error);
     res.status(400).json({

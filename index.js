@@ -11,9 +11,6 @@ import { fileURLToPath } from "url";
 
 
 const app = express();
-const secret = "mysecret";
-app.use(express.json());
-app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://app.xn--12cbx8beub8evezb2evdwa3gkk.com"],
@@ -21,6 +18,11 @@ app.use(
     credentials: true,
   })
 );
+
+const secret = "mysecret";
+app.use(express.json());
+app.use(cookieParser());
+
 
 app.use(
   session({

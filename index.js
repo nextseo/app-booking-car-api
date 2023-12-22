@@ -133,8 +133,6 @@ app.post("/api/login", async (req, res) => {
     //   sameSite: "none",
     // });
 
-    res.cookie("token", token);
-
     res.status(200).json({
       message: "login success",
       token,
@@ -153,15 +151,16 @@ app.post("/api/login", async (req, res) => {
 // Middleware
 
 const authenticationToken = async (req, res, next) => {
+  // console.log(req.headers.authorization);
   try {
-    // const authHeader = req.headers['authorization']
-    // let authToken = ""
-    // if(authHeader){
-    //     authToken = authHeader.split(' ')[1]
-    // }
+    const authHeader = req.headers.authorization
+    let authToken = ""
+    if(authHeader){
+        authToken = authHeader.split(' ')[1]
+    }
 
-    const authHeader = await req.cookies.token;
-    const user = jwt.verify(authHeader, secret);
+    // const authHeader = await req.cookies.token;
+    const user = jwt.verify(authToken, secret);
 
     const SELECT_USER_BY_USERNAME = "SELECT * FROM `login` WHERE username = ?";
     const [checkResults] = await db
@@ -180,10 +179,10 @@ const authenticationToken = async (req, res, next) => {
   }
 };
 
-app.get('/api/logout', (req,res)=>{
-  res.clearCookie('token')
-  return res.json({message : 'logout success !'})
-})
+// app.get('/api/logout', (req,res)=>{
+//   res.clearCookie('token')
+//   return res.json({message : 'logout success !'})
+// })
 
 
 // api only

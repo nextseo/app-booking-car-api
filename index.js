@@ -77,7 +77,7 @@ function getFileExtension(filename) {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hellowww v-1");
+  res.send("Hellowww v-2");
 });
 
 app.post("/api/register", async (req, res) => {

@@ -132,7 +132,7 @@ app.post("/api/login", async (req, res) => {
     //   sameSite: "none",
     // });
 
-    res.cookie('token', token, { expires: new Date(Date.now() + 900000), httpOnly: true });
+    res.cookie('token', token, { domain: 'http://localhost:5173', path: '/' });
 
 
     // res.cookie("token", token);

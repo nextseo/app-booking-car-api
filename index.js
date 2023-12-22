@@ -19,13 +19,14 @@ app.use(
       "https://app-booking-car-api.vercel.app"
     ],
     // methods: ["POST", "GET"],
-    methods: ["POST, GET"],
+    methods: ["POST"," GET"],
 
     credentials: true,
   })
 );
 
 const secret = "mysecret";
+const port = process.env.PORT || 8080;
 app.use(express.json());
 app.use(cookieParser());
 
@@ -131,8 +132,6 @@ app.post("/api/login", async (req, res) => {
     //   httpOnly: true,
     //   sameSite: "none",
     // });
-
-
 
     res.cookie("token", token);
 
@@ -251,6 +250,6 @@ app.get("/api/cars", authenticationToken, async (req, res) => {
   }
 });
 
-app.listen(8080, () => {
+app.listen(port, () => {
   console.log("server is 8080");
 });

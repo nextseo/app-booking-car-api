@@ -22,7 +22,7 @@ app.use(
       "https://app-booking-car-api.vercel.app",
     ],
     // methods: ["POST", "GET"],
-    methods: ["POST", " GET" , "DELETE"],
+    methods: ["POST", " GET" , "DELETE", "PUT"],
 
     credentials: true,
   })
@@ -64,7 +64,7 @@ function getFileExtension(filename) {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hellowww v-3");
+  res.send("Hellowww v-4");
 });
 
 app.post("/api/register", async (req, res) => {
@@ -164,10 +164,7 @@ const authenticationToken = async (req, res, next) => {
   }
 };
 
-// app.get('/api/logout', (req,res)=>{
-//   res.clearCookie('token')
-//   return res.json({message : 'logout success !'})
-// })
+
 
 // api only
 
@@ -261,9 +258,31 @@ app.delete("/api/car/:id/:image", authenticationToken , async (req,res)=> {
   const result = await db.promise().query(sql, [id])
   console.log(result);
   await deleteFromFTP(image);
+  res.status(200).json({
+    message: 'delete success'
+  })
  } catch (error) {
   console.log(error);
  }
+
+})
+
+app.put('/api/car', authenticationToken,  async (req,res)=>{
+try {
+  const { code, name, license, other, id } = req.body;
+  if(!name || !code) {
+    return res.status(400).json({message : "update faile no data"})
+  }
+  const sql = "UPDATE  cars SET code = ?, name = ?, license = ?, other = ? WHERE id = ? "
+  const values = [code, name, license, other, id]
+  const result = await db.promise().query(sql, values)
+  res.status(200).json({message: 'update success', result})
+} catch (error) {
+  console.log(error);
+  res.status(400).json({message: 'Update Error'})
+}
+
+
 
 })
 

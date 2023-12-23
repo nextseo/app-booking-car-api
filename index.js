@@ -8,7 +8,9 @@ import bcrypt from "bcrypt";
 import multer from "multer";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
-import fs from 'fs'
+import fs from "fs";
+
+import { deleteFromFTP, uploadToFTP } from "./ftp/ftpServer.js";
 
 const app = express();
 
@@ -20,7 +22,7 @@ app.use(
       "https://app-booking-car-api.vercel.app",
     ],
     // methods: ["POST", "GET"],
-    methods: ["POST", " GET"],
+    methods: ["POST", " GET" , "DELETE"],
 
     credentials: true,
   })
@@ -56,22 +58,6 @@ const db = mysql2.createConnection({
 //   password: "",
 //   database: "test",
 // });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "images/");
-  },
-  filename: (req, file, cb) => {
-    // const uniqueFileName = Date.now() + '-' + file.originalname;
-    const uniqueFileName = `${Date.now()}.${getFileExtension(
-      file.originalname
-    )}`;
-
-    cb(null, uniqueFileName);
-  },
-});
-
-const upload = multer({ storage: storage });
 
 function getFileExtension(filename) {
   return filename.split(".").pop();
@@ -201,16 +187,27 @@ app.get("/api/users", authenticationToken, async (req, res) => {
   }
 });
 
+
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 app.post(
   "/api/cars",
   authenticationToken,
   upload.single("file"),
   async (req, res) => {
- 
     try {
       const { code, name, license, other } = req.body;
-      const file = req.file.filename;
-  
+      const file = req.file;
+      const image = req.file.originalname;
+
+      if (!file) {
+        return res.status(400).send("No file uploaded.");
+      }
+
+      
+
       const sql =
         "INSERT INTO cars (code, name, license, other, image ) VALUES (?,?,?,?,?)";
       const [result] = await db
@@ -220,9 +217,11 @@ app.post(
           name || "",
           license || "",
           other || "",
-          file || "",
+          image || "",
         ]);
       console.log(result);
+
+      await uploadToFTP(file);
       res.status(200).json({
         message: "บันทึกสำเร็จ",
       });
@@ -234,8 +233,6 @@ app.post(
     }
   }
 );
-
-
 
 
 
@@ -251,6 +248,24 @@ app.get("/api/cars", authenticationToken, async (req, res) => {
     });
   }
 });
+
+
+
+app.delete("/api/car/:id/:image", authenticationToken , async (req,res)=> {
+ try {
+  const id = req.params.id
+  const image = req.params.image
+
+
+  const sql = "DELETE FROM cars WHERE id = ?"
+  const result = await db.promise().query(sql, [id])
+  console.log(result);
+  await deleteFromFTP(image);
+ } catch (error) {
+  console.log(error);
+ }
+
+})
 
 app.listen(port, () => {
   console.log("server is 8080");
